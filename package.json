@@ -1,0 +1,21 @@
+{
+  "name": "poltergeist",
+  "version": "0.1.0",
+  "description": "Haunted Codebase Explorer — visualise code smells as ghosts in a haunted house floor plan",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "npm run build && node dist/server/main.js",
+    "start": "node dist/server/main.js",
+    "test": "npm run build && node --test 'test/*.test.mjs'"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "fast-check": "^3.22.0",
+    "typescript": "^5.7.0"
+  }
+}
