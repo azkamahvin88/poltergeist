@@ -1,0 +1,1 @@
+{"mcpServers":{"poltergeist":{"args":["dist/mcp-server/main.js"],"command":"node","cwd":"${workspaceFolder}"}}}

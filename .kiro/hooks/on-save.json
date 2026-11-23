@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "TypeScript build on save",
+      "trigger": "PostFileSave",
+      "description": "When a .ts source file is saved under src/, rebuild the TypeScript project so the compiled output stays current for the MCP server and test runs.",
+      "matcher": "src/.*\\.tsx?$",
+      "action": {
+        "type": "command",
+        "command": "cd /home/hatch/workspace/kiroween-2026/poltergeist && npm run build 2>&1 | tail -5",
+        "timeout": 60
+      }
+    }
+  ]
+}

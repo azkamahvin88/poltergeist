@@ -10,10 +10,9 @@ import { join, extname, resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { logger } from './logger.js';
 import { analyzeFiles, analyzeDirectory } from '../analyzer/analyzer.js';
-import { extractTarball } from './tarball.js';
+import { fetchGithubFiles, parseGithubUrl } from '../analyzer/github.js';
 import { query as seanceQuery } from '../analyzer/seance.js';
 import type { AnalysisResult, FileEntry } from '../analyzer/types.js';
-import { request as httpsRequest } from 'node:https';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const PUBLIC_DIR = resolvePath(__dirname, '../../public');
@@ -64,34 +63,7 @@ function readBody(req: IncomingMessage): Promise<Buffer> {
   });
 }
 
-function fetchUrl(url: string): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    const req = httpsRequest(url, { method: 'GET' }, (res) => {
-      // Follow one redirect
-      if ((res.statusCode === 301 || res.statusCode === 302 || res.statusCode === 307)
-          && res.headers.location) {
-        resolve(fetchUrl(res.headers.location));
-        return;
-      }
-      if (res.statusCode && res.statusCode >= 400) {
-        reject(new Error(`HTTP_${res.statusCode}`));
-        return;
-      }
-      const chunks: Buffer[] = [];
-      res.on('data', (c: Buffer) => chunks.push(c));
-      res.on('end', () => resolve(Buffer.concat(chunks)));
-      res.on('error', reject);
-    });
-    req.on('error', reject);
-    req.end();
-  });
-}
-
-function parseGithubUrl(url: string): { owner: string; repo: string; ref: string } | null {
-  const m = url.match(/^https?:\/\/github\.com\/([^/]+)\/([^/]+?)(?:\.git)?(?:\/tree\/([^/]+))?(?:\/.*)?$/);
-  if (!m) return null;
-  return { owner: m[1]!, repo: m[2]!, ref: m[3] ?? 'HEAD' };
-}
+// (fetchUrl and parseGithubUrl moved to src/analyzer/github.ts)
 
 // ---------------------------------------------------------------------------
 // Route handlers
@@ -146,22 +118,13 @@ async function handleAnalyze(req: IncomingMessage, res: ServerResponse): Promise
       sendJson(res, 400, { error: 'bad_request', message: 'Invalid GitHub URL. Expected https://github.com/owner/repo' });
       return;
     }
-    const tarUrl = `https://codeload.github.com/${gh.owner}/${gh.repo}/tar.gz/${gh.ref}`;
-    let tarBuffer: Buffer;
-    try {
-      tarBuffer = await fetchUrl(tarUrl);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      logger.warn('GitHub fetch failed', { url: tarUrl, err: msg });
-      sendJson(res, 502, { error: 'github_unavailable', fallback: 'demo' });
-      return;
-    }
     let fileEntries: FileEntry[];
     try {
-      fileEntries = extractTarball(tarBuffer);
+      fileEntries = await fetchGithubFiles(repoUrl);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      sendJson(res, 502, { error: 'tarball_extraction_failed', message: msg });
+      logger.warn('GitHub fetch failed', { url: repoUrl, err: msg });
+      sendJson(res, 502, { error: 'github_unavailable', fallback: 'demo' });
       return;
     }
     const result = analyzeFiles(fileEntries, `${gh.owner}/${gh.repo}`);
