@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>POLTERGEIST — Haunted Codebase Explorer</title>
+  <link rel="stylesheet" href="styles.css" />
+  <meta name="description" content="Visualise code smells as ghosts haunting a floor plan of your codebase." />
+</head>
+<body class="fog-bg">
+<div class="app-shell">
+
+  <!-- ======== HEADER ======== -->
+  <header class="site-header">
+    <div>
+      <div class="site-title"><span class="ghost-mark" aria-hidden="true">👻</span>POLTERGEIST</div>
+      <div class="site-tagline">Haunted Codebase Explorer — Kiroween 2026</div>
+    </div>
+  </header>
+
+  <!-- ======== MAIN ======== -->
+  <main class="main-layout">
+
+    <!-- === LEFT: Input + Stats === -->
+    <aside class="panel-left" role="complementary" aria-label="Input and statistics">
+
+      <!-- Input section -->
+      <section class="panel-section" aria-labelledby="input-heading">
+        <h2 id="input-heading">Summon a Codebase</h2>
+
+        <!-- GitHub URL -->
+        <div class="input-group">
+          <input
+            id="url-input"
+            type="url"
+            placeholder="https://github.com/owner/repo"
+            aria-label="GitHub repository URL"
+          />
+          <button class="btn-primary" id="url-btn" type="button">Haunt</button>
+        </div>
+
+        <div class="divider">— or —</div>
+
+        <!-- Folder upload -->
+        <label class="file-upload-label" for="folder-input">
+          <span aria-hidden="true">📂</span>
+          <span id="folder-label-text">Upload a local folder</span>
+          <input
+            id="folder-input"
+            type="file"
+            webkitdirectory
+            multiple
+            accept=".ts,.tsx,.js,.jsx,.mjs,.cjs"
+            aria-label="Upload folder"
+          />
+        </label>
+        <button class="btn-secondary" id="folder-btn" type="button" disabled>Analyse uploaded folder</button>
+
+        <div class="divider">— or —</div>
+
+        <!-- Demo -->
+        <button class="btn-secondary" id="demo-btn" type="button">👻 Analyse this repo (demo)</button>
+      </section>
+
+      <!-- Loading state -->
+      <div id="loading-state" role="status" aria-live="polite">
+        <span class="candle-spinner" aria-hidden="true">🕯</span>
+        <span id="loading-text">Summoning spirits…</span>
+      </div>
+
+      <!-- Error state -->
+      <div id="error-state" role="alert" aria-live="assertive">
+        <span class="error-icon" aria-hidden="true">⚠️</span>
+        <span id="error-text"></span>
+      </div>
+
+      <!-- Results: Haunting meter -->
+      <section class="panel-section" id="stats-section" aria-labelledby="meter-heading" hidden>
+        <h2 id="meter-heading">Haunting Score</h2>
+        <div class="haunting-meter-wrap">
+          <span class="score-big" id="score-number" aria-label="Overall haunting score">—</span>
+          <span class="score-label" id="score-severity-label"></span>
+        </div>
+        <div class="meter-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="score-track">
+          <div class="meter-fill" id="score-fill"></div>
+        </div>
+
+        <!-- Summary stats -->
+        <div class="stats-grid" id="summary-stats">
+          <div class="stat-item"><div class="stat-value" id="stat-files">0</div><div class="stat-label">Files</div></div>
+          <div class="stat-item"><div class="stat-value" id="stat-ghosts">0</div><div class="stat-label">Ghosts</div></div>
+          <div class="stat-item"><div class="stat-value" id="stat-modules">0</div><div class="stat-label">Modules</div></div>
+          <div class="stat-item"><div class="stat-value" id="stat-cycles">0</div><div class="stat-label">Cycles</div></div>
+        </div>
+
+        <!-- Ghost type breakdown -->
+        <div class="ghost-types" id="ghost-type-breakdown" aria-label="Ghost types breakdown"></div>
+      </section>
+
+      <!-- Module list -->
+      <section class="panel-section" id="modules-section" aria-labelledby="modules-heading" hidden>
+        <h2 id="modules-heading">Modules</h2>
+        <div class="module-list" id="module-list" role="list"></div>
+      </section>
+
+    </aside>
+
+    <!-- === CENTRE: Floor plan === -->
+    <section class="panel-center" aria-labelledby="floorplan-heading">
+      <div class="floorplan-header">
+        <span id="floorplan-heading" style="font-weight:600;color:var(--text-primary)">Haunted House Floor Plan</span>
+        <div class="floorplan-legend" aria-label="Colour legend">
+          <div class="legend-item"><div class="legend-swatch" style="background:var(--score-calm)"></div>Calm (0–20)</div>
+          <div class="legend-item"><div class="legend-swatch" style="background:var(--score-eerie)"></div>Eerie (21–50)</div>
+          <div class="legend-item"><div class="legend-swatch" style="background:var(--score-haunted)"></div>Haunted (51–75)</div>
+          <div class="legend-item"><div class="legend-swatch" style="background:var(--score-cursed)"></div>Cursed (76–100)</div>
+        </div>
+      </div>
+
+      <div id="floorplan-wrap">
+        <div id="floorplan-empty" aria-hidden="true">
+          <div class="empty-ghost">👻</div>
+          <p>Summon a codebase to reveal its ghosts</p>
+        </div>
+        <svg id="floorplan" xmlns="http://www.w3.org/2000/svg"
+             role="img" aria-label="Haunted house floor plan"
+             style="display:none"></svg>
+      </div>
+    </section>
+
+    <!-- === RIGHT: Detail + Séance === -->
+    <aside class="panel-right" aria-label="Detail and séance">
+
+      <!-- Detail panel -->
+      <section id="detail-panel" aria-labelledby="detail-heading">
+        <h2 id="detail-heading" style="font-size:0.75rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:0.75rem">
+          Inspector
+        </h2>
+        <div id="detail-content" class="detail-empty">
+          Click a room, file, or ghost in the floor plan to inspect it.
+        </div>
+      </section>
+
+      <!-- Séance panel -->
+      <section id="seance-panel" aria-labelledby="seance-heading">
+        <h2 id="seance-heading">🕯 Séance</h2>
+
+        <div class="seance-chips" role="group" aria-label="Example questions" id="seance-chips"></div>
+
+        <div class="seance-input-row">
+          <input
+            id="seance-input"
+            type="text"
+            placeholder="Ask the spirits…"
+            aria-label="Séance question"
+            disabled
+          />
+          <button id="seance-btn" type="button" disabled>Ask</button>
+        </div>
+
+        <div
+          class="seance-answer empty"
+          id="seance-answer"
+          aria-live="polite"
+          aria-label="Séance answer"
+        >
+          No analysis loaded yet. Summon a codebase first.
+        </div>
+      </section>
+
+    </aside>
+
+  </main>
+
+  <!-- ======== FOOTER ======== -->
+  <footer class="site-footer">
+    <span>🔒 Analysis runs locally — no code is executed</span>
+    <span>🔮 Séance answers are deterministic — no external LLM</span>
+    <span>🕯 Kiroween 2026 Hackathon</span>
+  </footer>
+
+</div><!-- .app-shell -->
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
