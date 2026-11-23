@@ -8,7 +8,7 @@
       "matcher": "src/.*\\.tsx?$",
       "action": {
         "type": "command",
-        "command": "cd /home/hatch/workspace/kiroween-2026/poltergeist && npm run build 2>&1 | tail -5",
+        "command": "npm run build 2>&1 | tail -5",
         "timeout": 60
       }
     }

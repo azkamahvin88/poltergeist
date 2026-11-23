@@ -7,7 +7,7 @@
       "description": "Before a task executes, verify the build compiles and all tests pass. Blocks the task on failure (exit 2).",
       "action": {
         "type": "command",
-        "command": "cd /home/hatch/workspace/kiroween-2026/poltergeist && npm run build 2>&1 && npm test 2>&1 | tail -10",
+        "command": "npm run build 2>&1 && npm test 2>&1 | tail -10",
         "timeout": 120
       }
     }
