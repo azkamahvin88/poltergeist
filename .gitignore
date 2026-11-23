@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Compiled output
+dist/
+build/
+
+# Environment files
+.env
+.env.*
+
+# Logs
+*.log
+npm-debug.log*
+
+# macOS metadata
+.DS_Store
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Editor directories (optional — keep if your team uses them)
+# .vscode/
+# .idea/
+
+# NOTE: .kiro/ is intentionally NOT ignored.
+# Hackathon rules require it committed at repo root.
